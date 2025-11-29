@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-.clock {
+.inputScreen {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -22,11 +22,28 @@
   gap: 5px;
 }
 
+.clock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid white;
+  width: 450px;
+  height: 350px;
+  text-align: center;
+
+  /* Flexbox for centering */
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
 #timeButton {
     color: rgb(187, 187, 187);
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-family: 'Archivo Black', sans-serif; 
-    letter-spacing: rem;
     font-weight: 100;
     background-color: white;
     border: 2px solid white;
