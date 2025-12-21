@@ -1,5 +1,8 @@
 const timeButton = document.getElementById('timeButton')
 const pauseButton = document.getElementById('pauseButton')
+const inputBox = document.querySelector('.input');
+const titleStudyTime = document.getElementById('titleStudyTime');
+const plus30 = document.getElementById('plus30');
 let isHovering = false;
 
 /* Hide function for real time clock */
@@ -13,6 +16,35 @@ timeButton.addEventListener('mouseleave', function (){
     updateClock();
 });
 
+/* Convert minutes to time format */
+function minutesToTime(minutes) {
+    const mins = parseInt(minutes) || 0;
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return `${hours}:${String(remainingMins).padStart(2, '0')}`;
+}
+
+/* Update study time display */
+function updateStudyTime() {
+    const inputValue = inputBox.value.trim();
+    const timeFormatted = minutesToTime(inputValue);
+    titleStudyTime.textContent = timeFormatted;
+}
+
+/* Update on Enter key press */
+inputBox.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        updateStudyTime();
+        inputBox.blur();
+    }
+});
+
+/* Update when input user clicks elsewhere */
+inputBox.addEventListener('blur', function() {
+    updateStudyTime();
+});
+
+/* Update +30 */
 
 
 /* Real time clock update */

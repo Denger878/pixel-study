@@ -44,10 +44,14 @@ body {
   padding: 0.5rem 2rem;
   height: 70px;
   width: 300px;
+  text-align: center;
 }
-
 .input::placeholder {
   color: rgb(160, 160, 160);
+  text-align: center;
+}
+.input:focus::placeholder {
+  opacity: 0;
 }
 
 .studyTime {
