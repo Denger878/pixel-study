@@ -23,6 +23,10 @@ timeButton.addEventListener('mouseleave', function (){
     updateClock();
 });
 
+timeButton.addEventListener('click', function(){
+    timeButton.style.display = 'none';
+})
+
 /* Update on Enter key press */
 inputBox.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -45,6 +49,7 @@ plus30.addEventListener('click', function() {
 /* Pause/Start button on clock screen */
 pauseButton.addEventListener('click', function() {
     if (pauseButton.textContent === "Start") {
+        pauseButton.style.opacity = '0';
         startCountdown();
         pauseButton.textContent = "Pause";
     } else if (pauseButton.textContent === "Pause") {
@@ -53,6 +58,19 @@ pauseButton.addEventListener('click', function() {
     } else {
         startCountdown();
         pauseButton.textContent = "Pause";
+    }
+});
+
+pauseButton.addEventListener('mouseenter', function() {
+    if (pauseButton.textContent === "Pause") {
+        pauseButton.style.opacity = '1';
+    }
+});
+
+/* Hide pause button when mouse leaves */
+pauseButton.addEventListener('mouseleave', function() {
+    if (pauseButton.textContent === "Pause") {
+        pauseButton.style.opacity = '0';
     }
 });
 
@@ -113,4 +131,3 @@ function startCountdown() {
 
 updateClock();
 setInterval(updateClock, 1000);
-
