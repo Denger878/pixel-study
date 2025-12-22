@@ -54,8 +54,8 @@ body {
   opacity: 0;
 }
 
-.studyTime {
-    font-size: 9rem;
+#studyTime {
+    font-size: 10rem;
     font-family: 'Inter', sans-serif; 
     font-weight: 700;
 }
@@ -95,22 +95,21 @@ body {
   gap: 5px;
 }
 
-#input{
-  height: 75px;
-}
-
 #titleStudyTime {
   color: rgb(206, 206, 206);
+  font-size: 9rem;
+  font-family: 'Inter', sans-serif; 
+  font-weight: 700;
 }
 
-#plus30{
+#plus30 {
   font-size: 2rem;
   height: 100px;
   width: 300px;
-  padding: 0.5rem 2rem
+  padding: 0.5rem 2rem;
 }
 
-#start{
+#startButton {
   height: 70px;
   width: 300px;
   font-size: 1.5rem;

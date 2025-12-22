@@ -3,7 +3,12 @@ const pauseButton = document.getElementById('pauseButton')
 const inputBox = document.querySelector('.input');
 const titleStudyTime = document.getElementById('titleStudyTime');
 const plus30 = document.getElementById('plus30');
+const startButton = document.getElementById('startButton');
+const inputScreen = document.querySelector('.inputScreen');
+const clockScreen = document.querySelector('.clock');
+const clockStudyTime = document.getElementById('studyTime');
 let isHovering = false;
+let inputValue = 0;
 
 /* Hide function for real time clock */
 timeButton.addEventListener('mouseenter', function (){
@@ -26,9 +31,8 @@ function minutesToTime(minutes) {
 
 /* Update study time display */
 function updateStudyTime() {
-    const inputValue = inputBox.value.trim();
-    const timeFormatted = minutesToTime(inputValue);
-    titleStudyTime.textContent = timeFormatted;
+    inputValue = parseInt(inputBox.value.trim()) || 0;
+    titleStudyTime.textContent = minutesToTime(inputValue);
 }
 
 /* Update on Enter key press */
@@ -45,7 +49,20 @@ inputBox.addEventListener('blur', function() {
 });
 
 /* Update +30 */
+plus30.addEventListener('click', function() {
+    inputValue += 30;
+    titleStudyTime.textContent = minutesToTime(inputValue);
+});
 
+/* Start button - switch screens */
+startButton.addEventListener('click', function() {
+    if (inputValue > 0) {
+        inputScreen.style.display = 'none';
+        clockScreen.style.display = 'flex';
+        document.body.style.backgroundImage = 'none';
+        clockStudyTime.textContent = minutesToTime(inputValue);
+    }
+});
 
 /* Real time clock update */
 function updateClock() {
