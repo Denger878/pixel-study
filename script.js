@@ -21,6 +21,9 @@ landscapeImage.src = randomLandscape;
 landscapeImage.onload = function() {
   console.log('Loaded:', randomLandscape);
   ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  drawPixelated(8); // One pixel = whole screen width
+  console.log('Pixelated version drawn!');
 };
 
 landscapeImage.onerror = function() {
@@ -180,5 +183,36 @@ setInterval(updateClock, 1000);
 
 /* ==================== PIXEL REVEAL ==================== */
 
+let imageData = null;
+
+// Draw the image in pixelated blocks
+function drawPixelated(blockSize) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw blocks
+  for (let y = 0; y < canvas.height; y += blockSize) {
+    for (let x = 0; x < canvas.width; x += blockSize) {
+      const color = getAverageColor(x, y, blockSize, blockSize);
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, blockSize, blockSize);
+    }
+  }
+}
+
+/* Get average color of an image */
+function getAverageColor(startX, startY, blockWidth, blockHeight) {
+  let r = 0, g = 0, b = 0, count = 0;
+  
+  for (let y = startY; y < startY + blockHeight && y < canvas.height; y++) {
+    for (let x = startX; x < startX + blockWidth && x < canvas.width; x++) {
+      const index = (y * canvas.width + x) * 4;
+      r += imageData.data[index];     // Red
+      g += imageData.data[index + 1]; // Green
+      b += imageData.data[index + 2]; // Blue
+      count++;
+    }
+  }
+ return `rgb(${Math.floor(r/count)}, ${Math.floor(g/count)}, ${Math.floor(b/count)})`;
+}
 
 /* ==================== INITIALIZATION ==================== */
