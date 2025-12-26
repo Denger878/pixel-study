@@ -22,7 +22,7 @@ landscapeImage.onload = function() {
   console.log('Loaded:', randomLandscape);
   ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
   imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  drawPixelated(8); // One pixel = whole screen width
+  drawPixelated(200); // One pixel = whole screen width
   console.log('Pixelated version drawn!');
 };
 
@@ -45,6 +45,10 @@ let inputValue = 0;
 let remainingSeconds = 0;
 let countdownInterval = null;
 let inFinalMinute = false
+let lastStage = -1;
+const pixelStages = 32;
+const startBlockSize = 128;
+const endBlockSize = 4;
 
 /* ==================== TIMER LOGIC ==================== */
 
@@ -78,6 +82,7 @@ startButton.addEventListener('click', function() {
         canvas.style.display = 'block';
         remainingSeconds = inputValue * 60;
         clockStudyTime.textContent = secondsToTime(remainingSeconds);
+        drawPixelated(calculateBlockSize());
     }
 });
 
@@ -164,6 +169,8 @@ function startCountdown() {
     }
     countdownInterval = setInterval(function() {
         remainingSeconds --;
+        const blockSize = calculateBlockSize();
+        drawPixelated(blockSize);
         if (remainingSeconds <= 0) {
             clearInterval(countdownInterval);
             clockStudyTime.textContent = '';
@@ -213,6 +220,31 @@ function getAverageColor(startX, startY, blockWidth, blockHeight) {
     }
   }
  return `rgb(${Math.floor(r/count)}, ${Math.floor(g/count)}, ${Math.floor(b/count)})`;
+}
+
+// Calculate what block size should be based on progress
+function calculateBlockSize() {
+  const totalSeconds = inputValue * 60;
+  if (totalSeconds === 0) return startBlockSize;
+
+  const elapsed = totalSeconds - remainingSeconds;
+  const progress = elapsed / totalSeconds;
+
+  // Which discrete stage are we in?
+  const stage = Math.min(
+    pixelStages - 1,
+    Math.floor(progress * pixelStages)
+  );
+
+  // Exponential decay so it feels like consistent splitting
+  const ratio = Math.pow(
+    endBlockSize / startBlockSize,
+    1 / (pixelStages - 1)
+  );
+
+  const blockSize = startBlockSize * Math.pow(ratio, stage);
+
+  return Math.max(endBlockSize, Math.round(blockSize));
 }
 
 /* ==================== INITIALIZATION ==================== */
