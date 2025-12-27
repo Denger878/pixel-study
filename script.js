@@ -2,6 +2,9 @@
 const canvas = document.getElementById('landscapesCanvas');
 const ctx = canvas.getContext('2d');
 
+// Disable image smoothing for crisp pixels
+ctx.imageSmoothingEnabled = false;
+
 canvas.width = Math.min(window.innerWidth, 1920);
 canvas.height = Math.min(window.innerHeight, 1080);
 
@@ -185,7 +188,7 @@ function startCountdown() {
             clockStudyTime.textContent = '';
             timeButton.style.display = 'none';
             pauseButton.style.display = 'none';
-            // Final reveal here (Section 4)
+            colorBlastReveal();
         } else if (remainingSeconds <= 60) {
             clockStudyTime.textContent = remainingSeconds;
         } else {
@@ -197,8 +200,16 @@ function startCountdown() {
         if (newStage !== lastStage) {
             lastStage = newStage;
             const blockSize = calculateBlockSize();
-            drawPixelated(blockSize);
-            console.log(`Stage ${newStage}: ${blockSize}px blocks`);
+            
+            // Subtle desaturation only in final 60 seconds
+            let saturation = 1.0; // Full color by default
+            if (remainingSeconds <= 60) {
+                // Gradually reduce from 1.0 to 0.7 during final minute
+                saturation = 0.5 + (remainingSeconds / 60 * 0.5);
+            }
+            
+            drawPixelated(blockSize, saturation);
+            console.log(`Stage ${newStage}: ${blockSize}px blocks, saturation: ${saturation.toFixed(2)}`);
         }
         
     }, 1000);
@@ -212,13 +223,12 @@ setInterval(updateClock, 1000);
 let imageData = null;
 
 // Draw the image in pixelated blocks
-function drawPixelated(blockSize) {
+function drawPixelated(blockSize, saturation = 1.0) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // Draw blocks
   for (let y = 0; y < canvas.height; y += blockSize) {
     for (let x = 0; x < canvas.width; x += blockSize) {
-      const color = getAverageColor(x, y, blockSize, blockSize);
+      const color = getAverageColor(x, y, blockSize, blockSize, saturation);
       ctx.fillStyle = color;
       ctx.fillRect(x, y, blockSize, blockSize);
     }
@@ -226,19 +236,33 @@ function drawPixelated(blockSize) {
 }
 
 /* Get average color of an image */
-function getAverageColor(startX, startY, blockWidth, blockHeight) {
+function getAverageColor(startX, startY, blockWidth, blockHeight, saturation = 1.0) {
   let r = 0, g = 0, b = 0, count = 0;
   
   for (let y = startY; y < startY + blockHeight && y < canvas.height; y++) {
     for (let x = startX; x < startX + blockWidth && x < canvas.width; x++) {
       const index = (y * canvas.width + x) * 4;
-      r += imageData.data[index];     // Red
-      g += imageData.data[index + 1]; // Green
-      b += imageData.data[index + 2]; // Blue
+      r += imageData.data[index];
+      g += imageData.data[index + 1];
+      b += imageData.data[index + 2];
       count++;
     }
   }
- return `rgb(${Math.floor(r/count)}, ${Math.floor(g/count)}, ${Math.floor(b/count)})`;
+  
+  // Calculate average RGB
+  r = Math.floor(r / count);
+  g = Math.floor(g / count);
+  b = Math.floor(b / count);
+  
+  // Apply subtle desaturation if needed
+  if (saturation < 1.0) {
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    r = Math.floor(r * saturation + gray * (1 - saturation));
+    g = Math.floor(g * saturation + gray * (1 - saturation));
+    b = Math.floor(b * saturation + gray * (1 - saturation));
+  }
+  
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 // Calculate what block size should be based on current stage
@@ -270,4 +294,96 @@ function calculateStage() {
   return Math.min(stage, numberOfStages - 1);
 }
 
+// Animate the final color reveal with left-to-right wave
+function colorBlastReveal() {
+  let blastProgress = 0;
+  const blastDuration = 3000;
+  const startTime = Date.now();
+  
+  function animateBlast() {
+    const elapsed = Date.now() - startTime;
+    blastProgress = Math.min(1, elapsed / blastDuration);
+    
+    const easedProgress = 1 - Math.pow(1 - blastProgress, 2);
+    
+    const transitionZone = 150;
+    const wavePosition = easedProgress * (canvas.width + transitionZone);
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // LAYER 1: Draw pixelated background everywhere
+    const blockSize = 8;
+    for (let y = 0; y < canvas.height; y += blockSize) {
+      for (let x = 0; x < canvas.width; x += blockSize) {
+        const color = getAverageColor(x, y, blockSize, blockSize, 0.5);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, blockSize, blockSize);
+      }
+    }
+    
+    // LAYER 2: Draw full-res image over the revealed area
+    if (wavePosition > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, Math.max(0, wavePosition), canvas.height);
+      ctx.clip();
+      ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+      
+      // LAYER 3: Draw gradient mask over transition zone to blend
+      if (wavePosition < canvas.width + transitionZone) {
+        const gradient = ctx.createLinearGradient(
+        wavePosition - transitionZone, 0,
+        wavePosition, 0
+        );
+
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');    // Fully transparent (clear image)
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.6)');  // White overlay (brightens pixels)
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(wavePosition - transitionZone, 0, transitionZone, canvas.height);
+      }
+    }
+    
+    if (blastProgress < 1) {
+      requestAnimationFrame(animateBlast);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  requestAnimationFrame(animateBlast);
+}
+
 /* ==================== INITIALIZATION ==================== */
+
+// Handle window resize to keep canvas properly sized
+window.addEventListener('resize', function() {
+  // Only resize if on clock screen (canvas is visible)
+  if (canvas.style.display === 'block') {
+    const oldWidth = canvas.width;
+    const oldHeight = canvas.height;
+    
+    canvas.width = Math.min(window.innerWidth, 1920);
+    canvas.height = Math.min(window.innerHeight, 1080);
+    
+    // Redraw if size changed
+    if (oldWidth !== canvas.width || oldHeight !== canvas.height) {
+      // Reload image data at new size
+      ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
+      imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+      // Redraw current state
+      if (remainingSeconds > 0) {
+        const blockSize = calculateBlockSize();
+        let saturation = 1.0;
+        if (remainingSeconds <= 60) {
+          saturation = 0.5 + (remainingSeconds / 60 * 0.5);
+        }
+        drawPixelated(blockSize, saturation);
+      }
+    }
+  }
+});
