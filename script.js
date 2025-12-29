@@ -25,7 +25,7 @@ landscapeImage.onload = function() {
   console.log('Loaded:', randomLandscape);
   ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
   imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  drawPixelated(200); // One pixel = whole screen width
+  drawPixelated(200);
   console.log('Pixelated version drawn!');
 };
 
@@ -47,7 +47,7 @@ let isHovering = false;
 let inputValue = 0;
 let remainingSeconds = 0;
 let countdownInterval = null;
-let inFinalMinute = false
+let inFinalMinute = false;
 let lastStage = -1;
 const pixelStages = 32;
 const startBlockSize = 128;
@@ -70,6 +70,19 @@ inputBox.addEventListener('blur', function() {
     updateStudyTime();
 });
 
+/* Add global Enter key listener for starting timer */
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && inputScreen.style.display !== 'none') {
+        // Check if input box is NOT focused
+        if (document.activeElement !== inputBox) {
+            // Start timer if valid time exists
+            if (inputValue > 0) {
+                startTimer();
+            }
+        }
+    }
+});
+
 /* Update +30 */
 plus30.addEventListener('click', function() {
     inputValue += 30;
@@ -78,6 +91,11 @@ plus30.addEventListener('click', function() {
 
 /* Start button - switch screens */
 startButton.addEventListener('click', function() {
+    startTimer();
+});
+
+/* Function to start the timer and switch screens */
+function startTimer() {
     if (inputValue > 0) {
         inputScreen.style.display = 'none';
         clockScreen.style.display = 'flex';
@@ -87,7 +105,7 @@ startButton.addEventListener('click', function() {
         clockStudyTime.textContent = secondsToTime(remainingSeconds);
         drawPixelated(calculateBlockSize());
     }
-});
+}
 
 /* Update study time display */
 function updateStudyTime() {
@@ -178,7 +196,7 @@ function startCountdown() {
         lastUpdateTime = now;
         
         // Only decrement if close to 1 second has passed
-        if (deltaTime >= 900) { // 900ms threshold accounts for small delays
+        if (deltaTime >= 900) {
             remainingSeconds--;
         }
         
@@ -195,16 +213,15 @@ function startCountdown() {
             clockStudyTime.textContent = secondsToTime(remainingSeconds);
         }
         
-        // Update pixels only when stage changes (not every second!)
+        // Update pixels only when stage changes
         const newStage = calculateStage();
         if (newStage !== lastStage) {
             lastStage = newStage;
             const blockSize = calculateBlockSize();
             
             // Subtle desaturation only in final 60 seconds
-            let saturation = 1.0; // Full color by default
+            let saturation = 1.0;
             if (remainingSeconds <= 60) {
-                // Gradually reduce from 1.0 to 0.7 during final minute
                 saturation = 0.5 + (remainingSeconds / 60 * 0.5);
             }
             
@@ -268,14 +285,14 @@ function getAverageColor(startX, startY, blockWidth, blockHeight, saturation = 1
 // Calculate what block size should be based on current stage
 function calculateBlockSize() {
   const stage = calculateStage();
-  const numberOfStages = 16; // Must match the number in calculateStage()
+  const numberOfStages = 16;
   
   const maxBlockSize = 256;
   const minBlockSize = 8;
   
   // Create exponential curve for satisfying "splitting" feel
-  const stageProgress = stage / (numberOfStages - 1); // 0 to 1
-  const easedProgress = Math.pow(stageProgress, 1.4); // Slight ease
+  const stageProgress = stage / (numberOfStages - 1);
+  const easedProgress = Math.pow(stageProgress, 1.4);
   
   const blockSize = maxBlockSize * Math.pow(minBlockSize / maxBlockSize, easedProgress);
   
@@ -287,8 +304,8 @@ function calculateStage() {
   const totalSeconds = inputValue * 60;
   if (totalSeconds === 0) return 0;
   
-  const progress = (totalSeconds - remainingSeconds) / totalSeconds; // 0 to 1
-  const numberOfStages = 16; // Image will change 12 times total
+  const progress = (totalSeconds - remainingSeconds) / totalSeconds;
+  const numberOfStages = 16;
   
   const stage = Math.floor(progress * numberOfStages);
   return Math.min(stage, numberOfStages - 1);
@@ -296,6 +313,13 @@ function calculateStage() {
 
 // Animate the final color reveal with left-to-right wave
 function colorBlastReveal() {
+  // Remove frosted glass effect from clock container
+  clockScreen.style.background = 'transparent';
+  clockScreen.style.backdropFilter = 'none';
+  clockScreen.style.webkitBackdropFilter = 'none';
+  clockScreen.style.border = 'none';
+  clockScreen.style.boxShadow = 'none';
+  
   let blastProgress = 0;
   const blastDuration = 3000;
   const startTime = Date.now();
@@ -338,8 +362,8 @@ function colorBlastReveal() {
         wavePosition, 0
         );
 
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');    // Fully transparent (clear image)
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.6)');  // White overlay (brightens pixels)
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.6)');
 
         ctx.fillStyle = gradient;
         ctx.fillRect(wavePosition - transitionZone, 0, transitionZone, canvas.height);
@@ -358,6 +382,11 @@ function colorBlastReveal() {
 }
 
 /* ==================== INITIALIZATION ==================== */
+
+// Auto-focus the input box when page loads
+window.addEventListener('load', function() {
+    inputBox.focus();
+});
 
 // Handle window resize to keep canvas properly sized
 window.addEventListener('resize', function() {
