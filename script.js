@@ -1,3 +1,6 @@
+/* ==================== API CONFIGURATION ==================== */
+const API_URL = 'http://localhost:5001/api/random';
+
 /* ==================== CANVAS SETUP ==================== */
 const canvas = document.getElementById('landscapesCanvas');
 const ctx = canvas.getContext('2d');
@@ -8,29 +11,69 @@ ctx.imageSmoothingEnabled = false;
 canvas.width = Math.min(window.innerWidth, 1920);
 canvas.height = Math.min(window.innerHeight, 1080);
 
-const landscapes = [
-  'landscapes/lofoten_islands.jpg',
-  'landscapes/benagil_cave.jpg',
-  'landscapes/yellowstone.jpg',
-  'landscapes/great_wall_of_china.jpg',
-  'landscapes/ben_gioc.jpg'
-];
-
-const randomLandscape = landscapes[Math.floor(Math.random() * landscapes.length)];
-
 const landscapeImage = new Image();
-landscapeImage.src = randomLandscape;
+landscapeImage.crossOrigin = "anonymous";  // Enable CORS for API images
+
+/* ==================== LOAD RANDOM LANDSCAPE FROM API ==================== */
+async function loadRandomLandscape() {
+    try {
+        console.log('Fetching random landscape from API...');
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('API Response:', data.data);
+            
+            // Set image source from API
+            landscapeImage.src = data.data.imageUrl;
+            
+            // Log location if available
+            if (data.data.caption) {
+                console.log('Location:', data.data.caption);
+            } else {
+                console.log('No location data for this image');
+            }
+            
+            // Log photographer credit
+            console.log('Photo by:', data.data.photographer.name);
+        } else {
+            console.error('API returned error');
+            fallbackToLocalImage();
+        }
+    } catch (error) {
+        console.error('Failed to fetch from API:', error);
+        fallbackToLocalImage();
+    }
+}
+
+// Fallback to local image if API fails
+function fallbackToLocalImage() {
+    console.log('Using fallback local image');
+    const landscapes = [
+        'landscapes/lofoten_islands.jpg',
+        'landscapes/benagil_cave.jpg',
+        'landscapes/yellowstone.jpg',
+        'landscapes/great_wall_of_china.jpg',
+        'landscapes/ben_gioc.jpg'
+    ];
+    const randomLandscape = landscapes[Math.floor(Math.random() * landscapes.length)];
+    landscapeImage.src = randomLandscape;
+}
+
+// Load image on page load
+loadRandomLandscape();
 
 landscapeImage.onload = function() {
-  console.log('Loaded:', randomLandscape);
-  ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
-  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  drawPixelated(200);
-  console.log('Pixelated version drawn!');
+    console.log('Image loaded successfully');
+    ctx.drawImage(landscapeImage, 0, 0, canvas.width, canvas.height);
+    imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    drawPixelated(200);
+    console.log('Pixelated version drawn!');
 };
 
 landscapeImage.onerror = function() {
-  console.error('Failed to load:', randomLandscape);
+    console.error('Failed to load image, trying fallback');
+    fallbackToLocalImage();
 };
 
 /* ==================== CONSTANTS ==================== */
