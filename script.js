@@ -5,7 +5,7 @@
 
   /* -------------------- CONFIGURATION -------------------- */
   const CONFIG = {
-    API_URL: 'http://localhost:5001/api/random',
+    API_URL: 'https://landscape-data-pipeline-production.up.railway.app/api/random',
     CANVAS_MAX_WIDTH: 1920,
     CANVAS_MAX_HEIGHT: 1080,
     PIXEL_STAGES: 16,
