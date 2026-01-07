@@ -1,13 +1,9 @@
-/* ==========================================================================
-   Study Tour - Main Application Script
-   ========================================================================== */
+/* ==================== STUDY TOUR - SCRIPT ==================== */
 
 (function() {
   'use strict';
 
-  /* Configuration
-     ======================================================================== */
-
+  /* -------------------- CONFIGURATION -------------------- */
   const CONFIG = {
     API_URL: 'http://localhost:5001/api/random',
     CANVAS_MAX_WIDTH: 1920,
@@ -27,8 +23,7 @@
     { path: 'landscapes/ben_gioc.jpg', caption: 'Ban Gioc Waterfall, Vietnam' }
   ];
 
-  /* DOM Elements
-     ======================================================================== */
+  /* -------------------- DOM ELEMENTS -------------------- */
 
   const elements = {
     canvas: document.getElementById('landscapesCanvas'),
@@ -46,8 +41,7 @@
   const ctx = elements.canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  /* Application State
-     ======================================================================== */
+  /* -------------------- APPLICATION STATE -------------------- */
 
   const state = {
     inputValue: 0,
@@ -62,8 +56,7 @@
   const landscapeImage = new Image();
   landscapeImage.crossOrigin = 'anonymous';
 
-  /* Utility Functions
-     ======================================================================== */
+  /* -------------------- UTILITY FUNCTIONS -------------------- */
 
   function secondsToTime(seconds) {
     const total = parseInt(seconds) || 0;
@@ -98,8 +91,7 @@
     elements.timeButton.textContent = `${hours} : ${minutes} : ${seconds}`;
   }
 
-  /* Canvas & Pixel Functions
-     ======================================================================== */
+  /* -------------------- CANVAS & PIXEL FUNCTIONS -------------------- */
 
   function initializeCanvas() {
     elements.canvas.width = Math.min(window.innerWidth, CONFIG.CANVAS_MAX_WIDTH);
@@ -162,8 +154,7 @@
     return Math.round(blockSize);
   }
 
-  /* Image Loading
-     ======================================================================== */
+  /* -------------------- IMAGE LOADING -------------------- */
 
   async function loadRandomLandscape() {
     try {
@@ -200,8 +191,7 @@
     drawPixelated(200);
   }
 
-  /* Timer Functions
-     ======================================================================== */
+  /* -------------------- TIMER FUNCTIONS -------------------- */
 
   function updateStudyTime() {
     state.inputValue = parseInt(elements.inputBox.value.trim()) || 0;
@@ -247,8 +237,7 @@
     }, 1000);
   }
 
-  /* Reveal Animation
-     ======================================================================== */
+  /* -------------------- REVEAL ANIMATION -------------------- */
 
   function colorBlastReveal() {
     elements.clockScreen.style.background = 'transparent';
@@ -308,8 +297,7 @@
     requestAnimationFrame(animateBlast);
   }
 
-  /* UI Overlays
-     ======================================================================== */
+  /* -------------------- UI OVERLAYS -------------------- */
 
   function showLocationCaption() {
     if (!state.currentImageData || !state.currentImageData.caption) {
@@ -411,8 +399,7 @@
     }
   }
 
-  /* Restart
-     ======================================================================== */
+  /* -------------------- RESTART -------------------- */
 
   function restartTimer() {
     const caption = document.getElementById('locationCaption');
@@ -423,7 +410,7 @@
     elements.clockScreen.style.display = 'none';
     elements.inputScreen.style.display = 'flex';
     elements.canvas.style.display = 'none';
-    document.body.style.backgroundImage = "url('title-screen-background.png')";
+    document.body.style.backgroundImage = "url('images/title-screen-background.png')";
 
     Object.assign(elements.clockScreen.style, {
       background: 'rgba(255, 255, 255, 0.1)',
@@ -450,8 +437,7 @@
     elements.inputBox.focus();
   }
 
-  /* Event Listeners
-     ======================================================================== */
+  /* -------------------- EVENT LISTENERS -------------------- */
 
   function initializeEventListeners() {
     elements.inputBox.addEventListener('keypress', function(e) {
@@ -559,8 +545,7 @@
     landscapeImage.onerror = fallbackToLocalImage;
   }
 
-  /* Initialization
-     ======================================================================== */
+  /* -------------------- INITIALIZATION -------------------- */
 
   function init() {
     initializeCanvas();
