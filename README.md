@@ -46,7 +46,8 @@ For full functionality, run the [Landscape Data Pipeline API](https://github.com
 
 ## Screenshots
 
-![Study Tour Timer](https://study-tour-rho.vercel.app)
+![Study Tour Timer](images/title.png)
+![Study Tour Timer](images/clock.png)
 
 ## License
 
